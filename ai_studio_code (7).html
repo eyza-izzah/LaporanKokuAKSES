@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Aktiviti Kokurikulum 2026</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- html2pdf Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --maroon-dark: #4c0519;
+            --maroon-prof: #7f1d1d;
+            --gold: #b45309;
+        }
+
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: var(--maroon-dark);
+            margin: 0;
+            padding: 10px;
+        }
+        
+        .form-container { 
+            background-color: white; 
+            border-top: 6px solid var(--gold);
+            max-width: 800px;
+            margin: 0 auto;
+            border-radius: 10px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        input, select, textarea {
+            font-family: 'Lora', serif;
+            border: 1px solid #d1d5db;
+            background-color: #f9fafb;
+            padding: 8px;
+            width: 100%;
+            border-radius: 5px;
+            outline: none;
+            font-size: 0.85rem;
+        }
+        input:focus { border: 2px solid var(--maroon-prof); }
+
+        .img-preview {
+            height: 70px; width: 100%; object-fit: cover;
+            border-radius: 4px; border: 1px solid #ddd; margin-top: 4px;
+        }
+
+        /* --- PDF A4 OPTIMIZATION (COMPACT HEADER) --- */
+        #pdf-template {
+            width: 210mm;
+            background: white;
+            color: black;
+            font-family: 'Lora', serif;
+            display: none; 
+            margin: 0;
+        }
+
+        .pdf-page {
+            padding: 8mm 15mm; /* Margin atas dikurangkan secara drastik (8mm) */
+            box-sizing: border-box;
+            background: white;
+            min-height: 296mm;
+        }
+
+        /* Header yang lebih kecil dan padat */
+        .pdf-header {
+            text-align: center; 
+            border-bottom: 1.5px solid #7f1d1d; 
+            padding-bottom: 4px; 
+            margin-bottom: 12px;
+        }
+        .pdf-header h1 { font-size: 14pt; margin: 0; color: #7f1d1d; font-weight: 800; letter-spacing: 0.5px; }
+        .pdf-header h2 { font-size: 10pt; margin: 0; color: #444; font-weight: 600; text-transform: uppercase; }
+        
+        .pdf-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5pt; }
+        .pdf-table td { border: 1px solid #000; padding: 6px 10px; }
+        .pdf-label { font-weight: bold; background: #f8f8f8; font-family: 'Montserrat'; font-size: 8.5pt; width: 22%; }
+
+        .section-title {
+            font-family: 'Montserrat';
+            font-size: 8.5pt;
+            font-weight: bold;
+            color: #7f1d1d;
+            margin-bottom: 3px;
+            border-bottom: 1px solid #7f1d1d;
+            display: block;
+            padding-bottom: 1px;
+        }
+
+        .section-content { 
+            font-size: 10pt; 
+            line-height: 1.5; 
+            text-align: justify; 
+            margin-bottom: 12px; 
+            white-space: pre-wrap; /* Kekalkan perenggan */
+        }
+
+        .image-grid {
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            margin-top: 8px;
+        }
+        .image-box {
+            width: 100%; 
+            height: 175px; 
+            object-fit: cover; 
+            border: 0.5px solid #333; 
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BORANG INPUT -->
+    <div class="form-container p-6 md:p-8 my-5" id="main-ui">
+        <div class="text-center mb-6">
+            <h1 class="text-xl font-bold text-red-900 uppercase italic leading-tight">Laporan Kokurikulum 2026</h1>
+            <p class="text-gray-500 font-bold tracking-widest text-xs uppercase">SMK Ayer Keroh</p>
+            <div class="h-1 w-12 bg-yellow-600 mx-auto mt-2 rounded-full"></div>
+        </div>
+
+        <form id="kokuForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="text-[10px] font-bold text-red-900 uppercase mb-1 block">Kategori</label>
+                <select id="kategori">
+                    <option value="">-- Pilih --</option>
+                    <option value="Badan Beruniform">Badan Beruniform</option>
+                    <option value="Kelab & Persatuan">Kelab & Persatuan</option>
+                    <option value="Sukan & Permainan">Sukan & Permainan</option>
+                    <option value="Rumah Sukan">Rumah Sukan</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-red-900 uppercase mb-1 block">Nama Unit</label>
+                <input type="text" id="namaUnit" placeholder="Cth: Kadet Polis">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-red-900 uppercase mb-1 block">Nama Guru Pelapor</label>
+                <input type="text" id="namaGuru">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-red-900 uppercase mb-1 block">Nama Aktiviti</label>
+                <input type="text" id="namaAktiviti">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-red-900 uppercase mb-1 block">Tarikh</label>
+                <input type="date" id="tarikh">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-red-900 uppercase mb-1 block">Masa</label>
+                <input type="text" id="masa" placeholder="Cth: 2.30 - 4.30 PTG">
+            </div>
+            <div class="col-span-full">
+                <label class="text-[10px] font-bold text-red-900 uppercase mb-1 block">6. Jumlah Kehadiran</label>
+                <input type="number" id="kehadiran">
+            </div>
+            <div class="col-span-full">
+                <label class="text-[10px] font-bold text-red-900 uppercase mb-1 block">7. Objektif</label>
+                <textarea id="objektif" rows="2"></textarea>
+            </div>
+            <div class="col-span-full">
+                <label class="text-[10px] font-bold text-red-900 uppercase mb-1 block">8. Ringkasan Aktiviti</label>
+                <textarea id="ringkasan" rows="3"></textarea>
+            </div>
+
+            <!-- Upload Gambar -->
+            <div class="col-span-full">
+                <label class="text-[10px] font-bold text-red-900 uppercase mb-2 block">9. Dokumentasi (4 Gambar)</label>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200">
+                    <div class="text-center">
+                        <input type="file" id="img1" accept="image/*" class="text-[9px]" onchange="previewImage(event, 'preview1')">
+                        <img id="preview1" class="img-preview hidden">
+                    </div>
+                    <div class="text-center">
+                        <input type="file" id="img2" accept="image/*" class="text-[9px]" onchange="previewImage(event, 'preview2')">
+                        <img id="preview2" class="img-preview hidden">
+                    </div>
+                    <div class="text-center">
+                        <input type="file" id="img3" accept="image/*" class="text-[9px]" onchange="previewImage(event, 'preview3')">
+                        <img id="preview3" class="img-preview hidden">
+                    </div>
+                    <div class="text-center">
+                        <input type="file" id="img4" accept="image/*" class="text-[9px]" onchange="previewImage(event, 'preview4')">
+                        <img id="preview4" class="img-preview hidden">
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" id="btnJana" onclick="generatePDF()" class="col-span-full bg-red-900 text-white font-bold py-3 rounded-lg shadow-lg hover:bg-red-800 transition active:scale-95 text-xs uppercase tracking-widest mt-2">
+                Jana PDF Sekarang
+            </button>
+        </form>
+    </div>
+
+    <!-- TEMPLATE PDF (ULTRA COMPACT HEADER) -->
+    <div id="pdf-template">
+        <div class="pdf-page">
+            <div class="pdf-header">
+                <h1>LAPORAN AKTIVITI KOKURIKULUM 2026</h1>
+                <h2>SEKOLAH MENENGAH KEBANGSAAN AYER KEROH</h2>
+            </div>
+
+            <table class="pdf-table">
+                <tr>
+                    <td class="pdf-label">Kategori</td>
+                    <td id="out-kategori" style="width: 28%;"></td>
+                    <td class="pdf-label" style="width: 20%;">Nama Unit</td>
+                    <td id="out-unit"></td>
+                </tr>
+                <tr>
+                    <td class="pdf-label">Guru Pelapor</td>
+                    <td colspan="3" id="out-nama" style="font-weight: bold; text-transform: uppercase;"></td>
+                </tr>
+                <tr>
+                    <td class="pdf-label">Nama Aktiviti</td>
+                    <td colspan="3" id="out-aktiviti" style="font-style: italic;"></td>
+                </tr>
+                <tr>
+                    <td class="pdf-label">Tarikh / Masa</td>
+                    <td><span id="out-tarikh"></span> / <span id="out-masa"></span></td>
+                    <td class="pdf-label">Kehadiran</td>
+                    <td id="out-kehadiran" style="font-weight: bold;"></td>
+                </tr>
+            </table>
+
+            <span class="section-title">7. OBJEKTIF AKTIVITI</span>
+            <p id="out-objektif" class="section-content"></p>
+
+            <span class="section-title">8. RINGKASAN AKTIVITI</span>
+            <p id="out-ringkasan" class="section-content"></p>
+
+            <span class="section-title">9. DOKUMENTASI AKTIVITI</span>
+            <div class="image-grid">
+                <img id="out-img1" class="image-box" style="display: none;">
+                <img id="out-img2" class="image-box" style="display: none;">
+                <img id="out-img3" class="image-box" style="display: none;">
+                <img id="out-img4" class="image-box" style="display: none;">
+            </div>
+
+            <div style="margin-top: auto; padding-top: 15px; border-top: 1px solid #eee; text-align: center;">
+                <p style="font-size: 8pt; color: #999; font-family: 'Montserrat'; text-transform: uppercase;">Dijana Secara Digital • SMK Ayer Keroh • 2026</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function previewImage(event, previewId) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const output = document.getElementById(previewId);
+                output.src = reader.result;
+                output.classList.remove('hidden');
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        async function generatePDF() {
+            const btn = document.getElementById('btnJana');
+            const template = document.getElementById('pdf-template');
+            btn.innerText = "MENJANA...";
+            btn.disabled = true;
+
+            try {
+                // Mapping data
+                document.getElementById('out-kategori').innerText = document.getElementById('kategori').value;
+                document.getElementById('out-unit').innerText = document.getElementById('namaUnit').value;
+                document.getElementById('out-nama').innerText = document.getElementById('namaGuru').value;
+                document.getElementById('out-aktiviti').innerText = document.getElementById('namaAktiviti').value;
+                document.getElementById('out-tarikh').innerText = document.getElementById('tarikh').value;
+                document.getElementById('out-masa').innerText = document.getElementById('masa').value;
+                document.getElementById('out-kehadiran').innerText = document.getElementById('kehadiran').value + " Orang";
+                document.getElementById('out-objektif').innerText = document.getElementById('objektif').value;
+                document.getElementById('out-ringkasan').innerText = document.getElementById('ringkasan').value;
+
+                for(let i=1; i<=4; i++) {
+                    const preview = document.getElementById('preview' + i);
+                    const outImg = document.getElementById('out-img' + i);
+                    if(!preview.classList.contains('hidden')) {
+                        outImg.src = preview.src;
+                        outImg.style.display = 'block';
+                    } else {
+                        outImg.style.display = 'none';
+                    }
+                }
+
+                template.style.display = 'block';
+
+                const opt = {
+                    margin: 0,
+                    filename: `Laporan_Koku2026_${document.getElementById('namaUnit').value}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2.5, useCORS: true, letterRendering: true },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                await html2pdf().set(opt).from(template).save();
+
+            } catch (error) {
+                alert("Ralat menjana fail. Sila muat semula halaman.");
+            } finally {
+                template.style.display = 'none';
+                btn.innerText = "Jana PDF Sekarang";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
